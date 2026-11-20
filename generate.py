@@ -1,10 +1,11 @@
 import feedparser
-import requests
 import os
 import datetime
 import re
+from gigachat import GigaChat
+from gigachat.models import Chat, Messages, MessagesRole
 
-# ========== НАСТРОЙКИ: добавьте или измените темы и RSS-источники здесь ==========
+# ========== НАСТРОЙКИ ТЕМ ==========
 TOPICS = {
     "tech": {
         "name": "Технологии",
@@ -21,13 +22,11 @@ TOPICS = {
         ]
     }
 }
-# ==============================================================================
+# ===================================
 
-DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY")
-DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
+GIGACHAT_CREDENTIALS = os.environ.get("GIGACHAT_CREDENTIALS")
 
 def fetch_news(feed_urls, limit=5):
-    """Получить последние новости из списка RSS-лент, максимум limit штук с каждой ленты."""
     all_news = []
     for url in feed_urls:
         try:
@@ -42,13 +41,11 @@ def fetch_news(feed_urls, limit=5):
             print(f"Ошибка при чтении {url}: {e}")
     return all_news
 
-def ask_deepseek(topic_name, news_list):
-    """Отправить новости в DeepSeek, получить аналитическое резюме."""
+def ask_gigachat(topic_name, news_list):
     if not news_list:
         return "Нет новостей для анализа."
 
     news_text = "\n".join([f"- {n['title']}: {n['summary']}" for n in news_list])
-
     prompt = f"""Ты — аналитик новостей. На основе предоставленных ниже новостей по теме "{topic_name}" составь краткую сводку на русском языке:
 1. Что произошло (главные события)
 2. К чему всё идёт (тенденции)
@@ -59,24 +56,18 @@ def ask_deepseek(topic_name, news_list):
 Новости:
 {news_text}"""
 
-    headers = {
-        "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "model": "deepseek-flash",
-        "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.3,
-        "stream": False
-    }
-
     try:
-        resp = requests.post(DEEPSEEK_URL, headers=headers, json=payload, timeout=120)
-        resp.raise_for_status()
-        data = resp.json()
-        return data["choices"][0]["message"]["content"]
+        with GigaChat(
+            credentials=GIGACHAT_CREDENTIALS,
+            verify_ssl_certs=False,
+            model="GigaChat-2",  # Базовая быстрая модель. Можно заменить на "GigaChat-2-Pro" для лучшего качества
+            timeout=120
+        ) as client:
+            chat = Chat(messages=[Messages(role=MessagesRole.USER, content=prompt)])
+            response = client.chat(chat)
+            return response.messages[0].content
     except Exception as e:
-        print(f"Ошибка DeepSeek: {e}")
+        print(f"Ошибка GigaChat: {e}")
         return f"Ошибка анализа: {e}"
 
 def main():
@@ -87,19 +78,15 @@ def main():
         print(f"Обработка темы: {topic_info['name']}")
         news = fetch_news(topic_info["feeds"])
 
-        # Сгенерировать HTML-список новостей
         news_html = ""
         for n in news:
             news_html += f'<div class="news-item"><a href="{n["link"]}" target="_blank">{n["title"]}</a></div>\n'
         if not news_html:
             news_html = "<p>Новости не найдены.</p>"
 
-        # Вызвать DeepSeek для анализа
-        analysis_text = ask_deepseek(topic_info["name"], news)
-        # Простая обработка переносов строк
+        analysis_text = ask_gigachat(topic_info["name"], news)
         analysis_html = analysis_text.replace("\n", "<br>")
 
-        # Вставить в HTML
         pattern_news = f'(<div class="news-list" id="{topic_key}-news">).*?(</div>)'
         html = re.sub(pattern_news, f'\\1\n{news_html}\n\\2', html, flags=re.DOTALL)
 
