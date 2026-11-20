@@ -65,7 +65,7 @@ def ask_gigachat(topic_name, news_list):
         ) as client:
             chat = Chat(messages=[Messages(role=MessagesRole.USER, content=prompt)])
             response = client.chat(chat)
-            return response.messages[0].content
+            return response.choices[0].message.content
     except Exception as e:
         print(f"Ошибка GigaChat: {e}")
         return f"Ошибка анализа: {e}"
