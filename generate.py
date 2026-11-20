@@ -11,14 +11,15 @@ TOPICS = {
         "name": "Политика",
         "feeds": [
             "https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml",
-            "https://feeds.bbci.co.uk/news/politics/rss.xml"
+            "https://www.kommersant.ru/RSS/section-politics.xml"
         ]
     },
     "economy": {
         "name": "Экономика",
         "feeds": [
             "https://rss.nytimes.com/services/xml/rss/nyt/Economy.xml",
-            "https://www.cnbc.com/id/10001147/device/rss/rss.html"
+            "https://www.kommersant.ru/RSS/section-economics.xml",
+            "https://rssexport.rbc.ru/rbcnews/news/30/full.rss"
         ]
     },
     "science": {
@@ -31,8 +32,9 @@ TOPICS = {
     "tech": {
         "name": "Техника",
         "feeds": [
-            "https://feeds.arstechnica.com/arstechnica/technology-lab",
-            "https://www.theverge.com/rss/index.xml"
+            "https://www.kommersant.ru/RSS/section-hitech.xml",
+            "https://www.theverge.com/rss/index.xml",
+            "https://www.kommersant.ru/RSS/section-auto.xml"
         ]
     },
     "moscow": {
@@ -45,8 +47,8 @@ TOPICS = {
     "nnov": {
         "name": "Нижний Новгород",
         "feeds": [
-            "https://www.nn.ru/rss/",
-            "https://pravda-nn.ru/feed/"
+            "https://www.kommersant.ru/rss/regions/nnov_all.xml",
+            "https://www.niann.ru/rss"
         ]
     }
 }
