@@ -1,1 +1,37 @@
+name: Update News Digest
 
+on:
+  schedule:
+    - cron: '0 * * * *'   # каждый час (UTC). Можно изменить на '0 */6 * * *' (каждые 6 часов) и т.д.
+  workflow_dispatch:       # поддержка ручного запуска
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install feedparser requests
+
+      - name: Run generator
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: python generate.py
+
+      - name: Commit and push
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add index.html
+          git diff --quiet && git diff --staged --quiet || git commit -m "Auto-update news digest"
+          git push
