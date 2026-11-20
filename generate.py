@@ -7,11 +7,18 @@ from gigachat.models import Chat, Messages, MessagesRole
 
 # ========== НАСТРОЙКИ ТЕМ ==========
 TOPICS = {
-    "tech": {
-        "name": "Технологии",
+    "politics": {
+        "name": "Политика",
         "feeds": [
-            "https://feeds.arstechnica.com/arstechnica/technology-lab",
-            "https://www.theverge.com/rss/index.xml"
+            "https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml",
+            "https://feeds.bbci.co.uk/news/politics/rss.xml"
+        ]
+    },
+    "economy": {
+        "name": "Экономика",
+        "feeds": [
+            "https://rss.nytimes.com/services/xml/rss/nyt/Economy.xml",
+            "https://www.cnbc.com/id/10001147/device/rss/rss.html"
         ]
     },
     "science": {
@@ -19,6 +26,27 @@ TOPICS = {
         "feeds": [
             "https://www.sciencedaily.com/rss/all.xml",
             "https://www.nature.com/nature.rss"
+        ]
+    },
+    "tech": {
+        "name": "Техника",
+        "feeds": [
+            "https://feeds.arstechnica.com/arstechnica/technology-lab",
+            "https://www.theverge.com/rss/index.xml"
+        ]
+    },
+    "moscow": {
+        "name": "Москва",
+        "feeds": [
+            "https://www.m24.ru/rss.xml",
+            "https://lenta.ru/rss/news/moscow"
+        ]
+    },
+    "nnov": {
+        "name": "Нижний Новгород",
+        "feeds": [
+            "https://www.nn.ru/rss/",
+            "https://pravda-nn.ru/feed/"
         ]
     }
 }
@@ -90,8 +118,9 @@ def main():
         pattern_news = f'(<div class="news-list" id="{topic_key}-news">).*?(</div>)'
         html = re.sub(pattern_news, f'\\1\n{news_html}\n\\2', html, flags=re.DOTALL)
 
-        pattern_analysis = f'(<div class="analysis" id="{topic_key}-analysis">).*?(</div>)'
-        html = re.sub(pattern_analysis, f'\\1\n<h3>Анализ</h3>\n<p>{analysis_html}</p>\n\\2', html, flags=re.DOTALL)
+        pattern_analysis = f'(<div class="ai-bubble" id="{topic_key}-analysis">).*?(</div>)'
+        new_analysis_html = f'\\1\n<h3>Аналитика</h3>\n<p>{analysis_html}</p>\n\\2'
+        html = re.sub(pattern_analysis, new_analysis_html, html, flags=re.DOTALL)
 
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M UTC")
     html = html.replace(
